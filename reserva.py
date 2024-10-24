@@ -17,12 +17,16 @@ estoque = {
     "Bandeira do Brasil": 3
 }
 
+
+
 def login_admin():
     print("Administrador")
-    
+     
 
 def login_usuario():
     print("Usuário Comum")
+     
+
     
 def criar_tela_estoque():
     tela_estoque = tk.Toplevel()
@@ -47,9 +51,6 @@ def criar_tela_estoque():
     entrada_quantidade = tk.Entry(tela_estoque, width=10)
     entrada_quantidade.pack(pady=5)
     
-    label_quantidade_disponivel = tk.Label(tela_estoque, text="", bg=cor_branca, fg=letr)
-    label_quantidade_disponivel.pack(pady=5)
-
     botao_cautelar = ttk.Button(tela_estoque, text="Cautelar")
     botao_cautelar.pack(pady=10)
 
@@ -58,13 +59,12 @@ def criar_tela_estoque():
 
     frame_estoque = tk.Frame(tela_estoque, bg=cor_branca)
     frame_estoque.pack(pady=20)
-
-
+    
 # tela de login
 def criar_tela_login():
     tela_login = tk.Tk()
-    tela_login.title('Tela de Login')
-    tela_login.geometry('600x400')
+    tela_login.title('Login')
+    tela_login.geometry('600x325')
     tela_login.configure(background=cor_verde)
     tela_login.resizable(width=False, height=False)
 
@@ -75,10 +75,12 @@ def criar_tela_login():
     img1 = Image.open("C:/Users/jvmor/OneDrive/Área de Trabalho/proje_reserva_materiais_CA/MorelPeixoto_EstoqueCA/simbolo_eb.png")
     img1 = img1.resize((100, 120), Image.Resampling.LANCZOS) 
     imagem1 = ImageTk.PhotoImage(img1) 
+   
     
     img2 = Image.open("C:/Users/jvmor/OneDrive/Área de Trabalho/proje_reserva_materiais_CA/MorelPeixoto_EstoqueCA/simbolo_ime.png")
     img2 = img2.resize((100, 120), Image.Resampling.LANCZOS) 
     imagem2 = ImageTk.PhotoImage(img2)
+   
     
     img_label1 = tk.Label(tela_login, image=imagem1, bg=cor_verde)
     img_label1.place(x=0, y=0)
@@ -88,23 +90,24 @@ def criar_tela_login():
 
     # entradas de e-mail e senha
     label_usuario = tk.Label(tela_login, text="E-Mail", bg=cor_verde, fg=letr, font=('Arial', 12))
-    label_usuario.pack(pady=5)
+    label_usuario.pack(pady=1)
     entrada_usuario = tk.Entry(tela_login, width=30)
     entrada_usuario.pack(pady=5)
 
     label_senha = tk.Label(tela_login, text="Senha", bg=cor_verde, fg=letr, font=('Arial', 12))
-    label_senha.pack(pady=5)
+    label_senha.pack(pady=1)
     entrada_senha = tk.Entry(tela_login, show="*", width=30)
     entrada_senha.pack(pady=5)
 
     # botão de adm e usuário comum
-    botao_admin = ttk.Button(tela_login, text="Login como Admin", command=criar_tela_estoque)
-    botao_admin.pack(pady=10)
+    botao_admin = ttk.Button(tela_login, text="Login como Admin", command=lambda: [login_admin(), criar_tela_estoque()])
+    botao_admin.pack(pady=20)
 
-    botao_usuario = ttk.Button(tela_login, text="Login como Usuário Comum", command=criar_tela_estoque)
-    botao_usuario.pack(pady=10)
+    botao_usuario = ttk.Button(tela_login, text="Login como Usuário Comum", command=lambda: [login_admin(), criar_tela_estoque()])
+    botao_usuario.pack(pady=5)
 
     tela_login.mainloop()
-
+    
+    
 # tela de login
 criar_tela_login()
