@@ -9,12 +9,56 @@ cor_verde = "#3fb5a3"
 valr = "#38576b" 
 letr = "#403d3d" 
 
+# estoque da reserva de materiais
+estoque = {
+    "Japona": 5,
+    "Calça camuflada": 10,
+    "Gandola": 7,
+    "Bandeira do Brasil": 3
+}
+
 def login_admin():
     print("Administrador")
     
 
 def login_usuario():
     print("Usuário Comum")
+    
+def criar_tela_estoque():
+    tela_estoque = tk.Toplevel()
+    tela_estoque.title("Reserva de Materiais")
+    tela_estoque.geometry('600x400')
+    tela_estoque.configure(background=cor_verde)
+    
+    titulo = tk.Label(tela_estoque, text="Estoque de Materiais", font=('Arial', 18), bg=cor_verde, fg=letr)
+    titulo.pack(pady=20)
+
+    frame_itens = tk.Frame(tela_estoque, bg=cor_branca)
+    frame_itens.pack(pady=10)
+
+    label_item = tk.Label(tela_estoque, text="Selecione o Item:", bg=cor_verde, fg=letr)
+    label_item.pack(pady=5)
+    item_selecionado = tk.StringVar(tela_estoque)
+    item_menu = ttk.Combobox(tela_estoque, textvariable=item_selecionado, values=list(estoque.keys()))
+    item_menu.pack(pady=5)
+
+    label_quantidade = tk.Label(tela_estoque, text="Quantidade:", bg=cor_verde, fg=letr)
+    label_quantidade.pack(pady=5)
+    entrada_quantidade = tk.Entry(tela_estoque, width=10)
+    entrada_quantidade.pack(pady=5)
+    
+    label_quantidade_disponivel = tk.Label(tela_estoque, text="", bg=cor_branca, fg=letr)
+    label_quantidade_disponivel.pack(pady=5)
+
+    botao_cautelar = ttk.Button(tela_estoque, text="Cautelar")
+    botao_cautelar.pack(pady=10)
+
+    botao_devolver = ttk.Button(tela_estoque, text="Devolver")
+    botao_devolver.pack(pady=10)
+
+    frame_estoque = tk.Frame(tela_estoque, bg=cor_branca)
+    frame_estoque.pack(pady=20)
+
 
 # tela de login
 def criar_tela_login():
@@ -54,10 +98,10 @@ def criar_tela_login():
     entrada_senha.pack(pady=5)
 
     # botão de adm e usuário comum
-    botao_admin = ttk.Button(tela_login, text="Login como Admin", command=login_admin)
+    botao_admin = ttk.Button(tela_login, text="Login como Admin", command=criar_tela_estoque)
     botao_admin.pack(pady=10)
 
-    botao_usuario = ttk.Button(tela_login, text="Login como Usuário Comum", command=login_usuario)
+    botao_usuario = ttk.Button(tela_login, text="Login como Usuário Comum", command=criar_tela_estoque)
     botao_usuario.pack(pady=10)
 
     tela_login.mainloop()
