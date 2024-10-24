@@ -17,17 +17,27 @@ estoque = {
     "Bandeira do Brasil": 3
 }
 
-
+class usuario_comum:
+    def __init__(self, ID, Email, senha, bens_pessoais):
+        self.nome = ID
+        self.nome = Email
+        self.nome = senha
+        self.nome = bens_pessoais
+        
+class administrador:
+    def __init__(self, ID, Email, senha, bens_pessoais):
+        self.nome = ID
+        self.nome = Email
+        self.nome = senha
+        self.nome = bens_pessoais
+        
 
 def login_admin():
     print("Administrador")
-     
-
+    
 def login_usuario():
     print("Usuário Comum")
      
-
-    
 def criar_tela_estoque():
     tela_estoque = tk.Toplevel()
     tela_estoque.title("Reserva de Materiais")
@@ -68,7 +78,6 @@ def criar_tela_login():
     tela_login.configure(background=cor_verde)
     tela_login.resizable(width=False, height=False)
 
-    
     titulo = tk.Label(tela_login, text="Reserva de materiais (IME)", font=('Arial', 18), bg=cor_verde, fg=letr)
     titulo.pack(pady=20)
     
@@ -76,12 +85,10 @@ def criar_tela_login():
     img1 = img1.resize((100, 120), Image.Resampling.LANCZOS) 
     imagem1 = ImageTk.PhotoImage(img1) 
    
-    
     img2 = Image.open("C:/Users/jvmor/OneDrive/Área de Trabalho/proje_reserva_materiais_CA/MorelPeixoto_EstoqueCA/simbolo_ime.png")
     img2 = img2.resize((100, 120), Image.Resampling.LANCZOS) 
     imagem2 = ImageTk.PhotoImage(img2)
    
-    
     img_label1 = tk.Label(tela_login, image=imagem1, bg=cor_verde)
     img_label1.place(x=0, y=0)
 
