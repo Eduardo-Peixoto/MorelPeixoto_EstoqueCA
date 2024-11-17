@@ -76,12 +76,53 @@ def login_admin(email, senha):
     else:
         messagebox.showerror("Erro", "Usuário ou senha inválidos.")
 
+def solicitar_dados_retirada(item, quantidade):
+    """Abre uma janela para solicitar o nome e o número do responsável e salvar os dados da retirada."""
+    janela_retirada = tk.Toplevel()
+    janela_retirada.title("Dados de Retirada")
+    janela_retirada.geometry("400x250")
+    janela_retirada.configure(background=cor_branca)
+
+    tk.Label(janela_retirada, text=f"Item: {item}", font=('Arial', 12), bg=cor_branca, fg=letr).pack(pady=10)
+    tk.Label(janela_retirada, text=f"Quantidade: {quantidade}", font=('Arial', 12), bg=cor_branca, fg=letr).pack(pady=5)
+
+    # Entrada para o nome
+    tk.Label(janela_retirada, text="Nome do responsável:", bg=cor_branca, fg=letr).pack()
+    entrada_nome = tk.Entry(janela_retirada)
+    entrada_nome.pack(pady=5)
+
+    # Entrada para o número
+    tk.Label(janela_retirada, text="Número do responsável:", bg=cor_branca, fg=letr).pack()
+    entrada_numero = tk.Entry(janela_retirada)
+    entrada_numero.pack(pady=5)
+
+    def confirmar_retirada():
+        nome_responsavel = entrada_nome.get()
+        numero_responsavel = entrada_numero.get().strip()
+        if nome_responsavel and numero_responsavel:
+            data_retirada = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # Salvar em arquivo .txt
+            with open("historico_retiradas.txt", "a") as arquivo:
+                arquivo.write(
+                    f"{data_retirada} - Nome: {nome_responsavel}, Número: {numero_responsavel} retirou {quantidade} de {item}\n"
+                )
+            # Realizar a retirada no estoque
+            if estoque.retirar_item(item, int(quantidade), nome_responsavel):
+                messagebox.showinfo("Sucesso", f"{quantidade} unidades de {item} cauteladas por {nome_responsavel}.")
+                janela_retirada.destroy()
+            else:
+                messagebox.showerror("Erro", "Estoque insuficiente ou item não encontrado.")
+                janela_retirada.destroy()
+        else:
+            messagebox.showerror("Erro", "O nome do responsável é obrigatório.")
+
+    ttk.Button(janela_retirada, text="Confirmar Retirada", command=confirmar_retirada).pack(pady=20)
+
 def cautelar_item(item, quantidade):
-    global usuario_logado
-    if estoque.retirar_item(item, int(quantidade), usuario_logado):
-        messagebox.showinfo("Sucesso", f"{quantidade} unidades de {item} cauteladas.")
+    if item and quantidade.isdigit() and int(quantidade) > 0:
+        solicitar_dados_retirada(item, quantidade)
     else:
-        messagebox.showerror("Erro", "Estoque insuficiente ou item não encontrado.")
+        messagebox.showerror("Erro", "Selecione um item válido e insira uma quantidade.")
 
 def devolver_item(item, quantidade):
     global usuario_logado
