@@ -41,7 +41,7 @@ class Estoque:
             if quantidade_atual >= quantidade:
                 linha_item[1].value -= quantidade
                 historico = linha_item[2].value or ""
-                linha_item[2].value = f"{historico}\n{datetime.now()} - {usuario} retirou {quantidade}"
+                linha_item[2].value = f"{historico}\n{datetime.now()} - {usuario} retirou {quantidade} "
                 self.salvar()
                 return True
         return False
@@ -63,7 +63,7 @@ usuario_logado = None
 def realizar_login(email, senha):
     global usuario_logado
     # Usuários para autenticação (substituir por banco de dados em um sistema real)
-    usuarios = {"admin@example.com": "admin123", "user@example.com": "user123"}
+    usuarios = {"admin@example.com": "admin123", "user@example.com": "user123", "1":"2"}
 
     if email in usuarios and usuarios[email] == senha:
         usuario_logado = email
@@ -94,10 +94,25 @@ def devolver_item(item, quantidade):
 def criar_tela_login():
     tela_login = tk.Tk()
     tela_login.title("Login")
-    tela_login.geometry("400x300")
+    tela_login.geometry("600x325")
     tela_login.configure(background=cor_verde)
 
     tk.Label(tela_login, text="Login", font=('Arial', 18), bg=cor_verde, fg=letr).pack(pady=20)
+
+    img1 = Image.open("C:/Users/amado/Documents/VSCodeProjects/ProgAp/simbolo_eb.png")
+    img1 = img1.resize((100, 120), Image.Resampling.LANCZOS) 
+    imagem1 = ImageTk.PhotoImage(img1) 
+   
+    img2 = Image.open("C:/Users/amado/Documents/VSCodeProjects/ProgAp/simbolo_ime.png")
+    img2 = img2.resize((100, 120), Image.Resampling.LANCZOS) 
+    imagem2 = ImageTk.PhotoImage(img2)
+
+    img_label1 = tk.Label(tela_login, image=imagem1, bg=cor_verde)
+    img_label1.place(x=0, y=0)
+
+    img_label2 = tk.Label(tela_login, image=imagem2, bg=cor_verde)
+    img_label2.place(x=500, y=0)
+
 
     tk.Label(tela_login, text="E-Mail:", bg=cor_verde, fg=letr).pack()
     entrada_email = tk.Entry(tela_login)
@@ -111,6 +126,27 @@ def criar_tela_login():
     botao_login.pack(pady=20)
 
     tela_login.mainloop()
+
+def exibir_estoque_em_tela():
+    #Exibe os itens do estoque em uma nova janela.
+    # Criar nova janela
+
+    tela_itens = tk.Toplevel()
+    tela_itens.title("Itens no Estoque")
+    tela_itens.geometry("500x400")
+    tela_itens.configure(background=cor_branca)
+
+    # Título da nova tela
+    tk.Label(tela_itens, text="Itens Disponíveis no Estoque", font=('Arial', 16), bg=cor_branca, fg=valr).pack(pady=10)
+
+    # Frame para a lista de itens
+    frame_itens = tk.Frame(tela_itens, bg=cor_branca)
+    frame_itens.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+    # Exibir os itens do estoque
+    itens = estoque.exibir_estoque()
+    for item, quantidade in itens:
+        tk.Label(frame_itens, text=f"{item}: {quantidade}", font=('Arial', 12), bg=cor_branca, fg=letr).pack(anchor="w", pady=2)
 
 def criar_tela_estoque():
     tela_estoque = tk.Toplevel()
@@ -130,6 +166,7 @@ def criar_tela_estoque():
 
     ttk.Button(tela_estoque, text="Cautelar", command=lambda: cautelar_item(item_selecionado.get(), entrada_quantidade.get())).pack(pady=10)
     ttk.Button(tela_estoque, text="Devolver", command=lambda: devolver_item(item_selecionado.get(), entrada_quantidade.get())).pack(pady=10)
+    ttk.Button(tela_estoque, text="Mostrar Estoque", command=exibir_estoque_em_tela).pack(pady=10)
 
 # Inicializa a aplicação
 criar_tela_login()
