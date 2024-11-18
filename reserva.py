@@ -6,6 +6,9 @@ import openpyxl
 import os
 from datetime import datetime
 
+# Variável global para a tela de login
+tela_login = None
+
 # cores
 cor_preta = "#f0f3f5" 
 cor_branca = "#f3ffff"
@@ -13,7 +16,7 @@ cor_verde = "#3fb5a3"
 valr = "#38576b" 
 letr = "#403d3d" 
 
-# diretório do arquivo .py
+# identificação do diretório do código .py (a planilha deve estar no mesmo local, assim como as imagens!)
 diretorio_atual = os.path.dirname(os.path.abspath(__file__))
 
 # caminho para imagens
@@ -23,16 +26,24 @@ caminho_imagem_ime = os.path.join(diretorio_atual, "simbolo_ime.png")
 # caminho da planilha
 ARQUIVO_ESTOQUE = os.path.join(diretorio_atual, "estoque.xlsx")
 
+# caminho para a planilha de inventário
+ARQUIVO_INVENTARIO = os.path.join(diretorio_atual, "inventario_usuarios.xlsx")
+
 # gerenciar estoque no excel
 class Estoque:
     def __init__(self, arquivo):
         self.arquivo = arquivo
         
         try:
+            # planilha de estoque
             self.wb = openpyxl.load_workbook(arquivo)
             self.sheet = self.wb.active
+            
+            # planilha de inventario
+            self.wb_inventario = openpyxl.load_workbook(ARQUIVO_INVENTARIO)
+            self.sheet_inventario = self.wb_inventario.active
         except FileNotFoundError:
-            print(f"Erro: O arquivo {arquivo} não foi encontrado!")
+            print(f"Erro: O arquivo {arquivo} ou {ARQUIVO_INVENTARIO} não foi encontrado!")
             raise
 
     def salvar(self):
@@ -53,8 +64,6 @@ class Estoque:
             quantidade_atual = linha_item[1].value
             if quantidade_atual >= quantidade:
                 linha_item[1].value -= quantidade
-                historico = linha_item[2].value or ""
-                linha_item[2].value = f"{historico}\n{datetime.now()} - {usuario} retirou {quantidade} "
                 self.salvar()
                 return True
         return False
@@ -63,21 +72,46 @@ class Estoque:
         linha_item = self.encontrar_item(item_nome)
         if linha_item:
             linha_item[1].value += quantidade
-            historico = linha_item[2].value or ""
-            linha_item[2].value = f"{historico}\n{datetime.now()} - {usuario} devolveu {quantidade}"
             self.salvar()
             return True
         return False
+    
+    def atualizar_inventario_usuario(self, nome_usuario, item_nome, quantidade, acao):
+        # Encontra o índice da linha do usuário na planilha de inventário
+        for row in self.sheet_inventario.iter_rows(min_row=2, max_col=13):
+            if row[0].value == nome_usuario:
+                # Encontra a coluna correspondente ao item, com base na primeira coluna de estoque.xlsx
+                for idx, cell in enumerate(row[1:], start=1):  # as colunas B até L (referente aos itens)
+                    if self.sheet.cell(row=idx+1, column=1).value == item_nome:  # Verifica com a primeira coluna de estoque.xlsx
+                        if acao == "cautelar":
+                            # Atualiza a quantidade para o item cautelado
+                            row[idx].value = (row[idx].value or 0) + quantidade
+                        elif acao == "devolver":
+                            # Verifica se o usuário tem a quantidade suficiente para devolver
+                            if row[idx].value >= quantidade:
+                                row[idx].value -= quantidade
+                            else:
+                                return False  # Quantidade insuficiente no inventário
+                self.wb_inventario.save(ARQUIVO_INVENTARIO)  # Salva após a alteração
+                return True  # Retorna aqui após atualizar todas as colunas
+        return False  # Caso o nome do usuário não seja encontrado
+
 
 # funções de integração com a interface gráfica
 estoque = Estoque(ARQUIVO_ESTOQUE)
 usuario_logado = None
 
+usuarios_info = {
+    "morel@ime.eb.br": {"nome": "Morel", "numero": "12345"},
+    "peixoto@ime.eb.br": {"nome": "Peixoto", "numero": "67890"},
+    "nicolas@ime.eb.br": {"nome": "Nicolas", "numero": "11223"}
+}
+
 def realizar_login(email, senha):
     global usuario_logado
     
     # usuários para autenticação
-    usuarios = {"admin@example.com": "admin123", "user@example.com": "user123", "1":"2"}
+    usuarios = {"morel@ime.eb.br": "morel", "peixoto@ime.eb.br": "peixoto", "nicolas@ime.eb.br": "nicolas"}
 
     if email in usuarios and usuarios[email] == senha:
         usuario_logado = email
@@ -86,70 +120,60 @@ def realizar_login(email, senha):
 
 def login_admin(email, senha):
     if realizar_login(email, senha):
-        criar_tela_estoque()
+        # deixar só uma tela por vez, exclui a de login e cria outra
+        for widget in tela_login.winfo_children():
+            widget.destroy()
+        criar_tela_estoque(tela_login)  
     else:
         messagebox.showerror("Erro", "Usuário ou senha inválidos.")
 
-def solicitar_dados_retirada(item, quantidade):
-    
-    # abre uma janela para solicitar o nome e o número do responsável e salvar os dados da retirada
-    janela_retirada = tk.Toplevel()
-    janela_retirada.title("Dados de Retirada")
-    janela_retirada.geometry("400x250")
-    janela_retirada.configure(background=cor_branca)
-
-    tk.Label(janela_retirada, text=f"Item: {item}", font=('Arial', 12), bg=cor_branca, fg=letr).pack(pady=10)
-    tk.Label(janela_retirada, text=f"Quantidade: {quantidade}", font=('Arial', 12), bg=cor_branca, fg=letr).pack(pady=5)
-
-    # nome
-    tk.Label(janela_retirada, text="Nome do responsável:", bg=cor_branca, fg=letr).pack()
-    entrada_nome = tk.Entry(janela_retirada)
-    entrada_nome.pack(pady=5)
-
-    # número
-    tk.Label(janela_retirada, text="Número do responsável:", bg=cor_branca, fg=letr).pack()
-    entrada_numero = tk.Entry(janela_retirada)
-    entrada_numero.pack(pady=5)
-
-    def confirmar_retirada():
-        nome_responsavel = entrada_nome.get()
-        numero_responsavel = entrada_numero.get().strip()
-        if nome_responsavel and numero_responsavel:
-            data_retirada = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+def cautelar_item(item, quantidade):
+    global usuario_logado
+    if item and quantidade.isdigit() and int(quantidade) > 0:
+        if usuario_logado in usuarios_info:
+            info_usuario = usuarios_info[usuario_logado]
+            nome_responsavel = info_usuario["nome"]
+            numero_responsavel = info_usuario["numero"]
             
-            # salvar em arquivo .txt
-            with open("historico_retiradas.txt", "a") as arquivo:
-                arquivo.write(
-                    f"{data_retirada} - Nome: {nome_responsavel}, Número: {numero_responsavel} retirou {quantidade} de {item}\n"
-                )
+            data_retirada = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
-            # retirada do estoque
             if estoque.retirar_item(item, int(quantidade), nome_responsavel):
-                messagebox.showinfo("Sucesso", f"{quantidade} unidades de {item} cauteladas por {nome_responsavel}.")
-                janela_retirada.destroy()
+                if estoque.atualizar_inventario_usuario(nome_responsavel, item, int(quantidade), "cautelar"):
+                    messagebox.showinfo("Sucesso", f"{quantidade} unidades de {item} cauteladas por {nome_responsavel}.")
+                else:
+                    messagebox.showerror("Erro", "Falha ao atualizar o inventário do usuário.")
             else:
                 messagebox.showerror("Erro", "Estoque insuficiente ou item não encontrado.")
-                janela_retirada.destroy()
         else:
-            messagebox.showerror("Erro", "O nome do responsável é obrigatório.")
-
-    ttk.Button(janela_retirada, text="Confirmar Retirada", command=confirmar_retirada).pack(pady=20)
-
-def cautelar_item(item, quantidade):
-    if item and quantidade.isdigit() and int(quantidade) > 0:
-        solicitar_dados_retirada(item, quantidade)
+            messagebox.showerror("Erro", "Usuário não registrado para retirada.")
     else:
         messagebox.showerror("Erro", "Selecione um item válido e insira uma quantidade.")
 
+
+
 def devolver_item(item, quantidade):
     global usuario_logado
-    if estoque.devolver_item(item, int(quantidade), usuario_logado):
-        messagebox.showinfo("Sucesso", f"{quantidade} unidades de {item} devolvidas.")
+    if item and quantidade.isdigit() and int(quantidade) > 0:
+        if usuario_logado in usuarios_info:
+            info_usuario = usuarios_info[usuario_logado]
+            nome_responsavel = info_usuario["nome"]
+
+            if estoque.atualizar_inventario_usuario(nome_responsavel, item, int(quantidade), "devolver"):
+                if estoque.devolver_item(item, int(quantidade), nome_responsavel):
+                    messagebox.showinfo("Sucesso", f"{quantidade} unidades de {item} devolvidas.")
+                else:
+                    messagebox.showerror("Erro", "Item não encontrado no estoque.")
+            else:
+                messagebox.showerror("Erro", "Quantidade insuficiente no inventário do usuário.")
+        else:
+            messagebox.showerror("Erro", "Usuário não registrado.")
     else:
-        messagebox.showerror("Erro", "Item não encontrado.")
+        messagebox.showerror("Erro", "Selecione um item válido e insira uma quantidade.")
+
 
 # interface gráfica
 def criar_tela_login():
+    global tela_login
     tela_login = tk.Tk()
     tela_login.title("Login")
     tela_login.geometry("600x325")
@@ -160,7 +184,7 @@ def criar_tela_login():
     img1 = Image.open(caminho_imagem_eb)
     img1 = img1.resize((100, 120), Image.Resampling.LANCZOS) 
     imagem1 = ImageTk.PhotoImage(img1) 
-       
+
     img2 = Image.open(caminho_imagem_ime)
     img2 = img2.resize((100, 120), Image.Resampling.LANCZOS) 
     imagem2 = ImageTk.PhotoImage(img2)
@@ -203,25 +227,24 @@ def exibir_estoque_em_tela():
     for item, quantidade in itens:
         tk.Label(frame_itens, text=f"{item}: {quantidade}", font=('Arial', 12), bg=cor_branca, fg=letr).pack(anchor="w", pady=2)
 
-def criar_tela_estoque():
-    tela_estoque = tk.Toplevel()
-    tela_estoque.title("Reserva de Materiais")
-    tela_estoque.geometry("500x400")
-    tela_estoque.configure(background=cor_verde)
+def criar_tela_estoque(tela):
+    tela.title("Reserva de Materiais")
+    tela.geometry("500x400")
+    tela.configure(background=cor_verde)
 
-    tk.Label(tela_estoque, text="Estoque de Materiais", font=('Arial', 18), bg=cor_verde, fg=letr).pack(pady=20)
+    tk.Label(tela, text="Estoque de Materiais", font=('Arial', 18), bg=cor_verde, fg=letr).pack(pady=20)
 
     itens = estoque.exibir_estoque()
-    item_selecionado = tk.StringVar(tela_estoque)
-    ttk.Combobox(tela_estoque, textvariable=item_selecionado, values=[i[0] for i in itens]).pack(pady=10)
+    item_selecionado = tk.StringVar(tela)
+    ttk.Combobox(tela, textvariable=item_selecionado, values=[i[0] for i in itens]).pack(pady=10)
 
-    tk.Label(tela_estoque, text="Quantidade:", bg=cor_verde, fg=letr).pack()
-    entrada_quantidade = tk.Entry(tela_estoque)
+    tk.Label(tela, text="Quantidade:", bg=cor_verde, fg=letr).pack()
+    entrada_quantidade = tk.Entry(tela)
     entrada_quantidade.pack(pady=5)
 
-    ttk.Button(tela_estoque, text="Cautelar", command=lambda: cautelar_item(item_selecionado.get(), entrada_quantidade.get())).pack(pady=10)
-    ttk.Button(tela_estoque, text="Devolver", command=lambda: devolver_item(item_selecionado.get(), entrada_quantidade.get())).pack(pady=10)
-    ttk.Button(tela_estoque, text="Mostrar Estoque", command=exibir_estoque_em_tela).pack(pady=10)
+    ttk.Button(tela, text="Cautelar", command=lambda: cautelar_item(item_selecionado.get(), entrada_quantidade.get())).pack(pady=10)
+    ttk.Button(tela, text="Devolver", command=lambda: devolver_item(item_selecionado.get(), entrada_quantidade.get())).pack(pady=10)
+    ttk.Button(tela, text="Mostrar Estoque", command=exibir_estoque_em_tela).pack(pady=10)
 
 # iniciar a aplicação
 criar_tela_login()
