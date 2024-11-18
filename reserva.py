@@ -6,7 +6,7 @@ import openpyxl
 import os
 from datetime import datetime
 
-# Variável global para a tela de login
+# variável global para tela de login (para ficar com uma tela só)
 tela_login = None
 
 # cores
@@ -77,12 +77,12 @@ class Estoque:
         return False
     
     def atualizar_inventario_usuario(self, nome_usuario, item_nome, quantidade, acao):
-        # Encontra o índice da linha do usuário na planilha de inventário
+        # encontrar o índice do usuário na planilha
         for row in self.sheet_inventario.iter_rows(min_row=2, max_col=13):
             if row[0].value == nome_usuario:
-                # Encontra a coluna correspondente ao item, com base na primeira coluna de estoque.xlsx
-                for idx, cell in enumerate(row[1:], start=1):  # as colunas B até L (referente aos itens)
-                    if self.sheet.cell(row=idx+1, column=1).value == item_nome:  # Verifica com a primeira coluna de estoque.xlsx
+                # encontra a coluna do item
+                for idx, cell in enumerate(row[1:], start=1):  
+                    if self.sheet.cell(row=idx+1, column=1).value == item_nome:  
                         if acao == "cautelar":
                             # Atualiza a quantidade para o item cautelado
                             row[idx].value = (row[idx].value or 0) + quantidade
@@ -91,10 +91,10 @@ class Estoque:
                             if row[idx].value >= quantidade:
                                 row[idx].value -= quantidade
                             else:
-                                return False  # Quantidade insuficiente no inventário
-                self.wb_inventario.save(ARQUIVO_INVENTARIO)  # Salva após a alteração
-                return True  # Retorna aqui após atualizar todas as colunas
-        return False  # Caso o nome do usuário não seja encontrado
+                                return False  # quantidade insuficiente no inventário
+                self.wb_inventario.save(ARQUIVO_INVENTARIO)  # salvar depois de alterar
+                return True  
+        return False  # caso o nome não seja encontrado
 
 
 # funções de integração com a interface gráfica
