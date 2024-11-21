@@ -29,7 +29,7 @@ ARQUIVO_ESTOQUE = os.path.join(diretorio_atual, "estoque.xlsx")
 # caminho para a planilha de inventário
 ARQUIVO_INVENTARIO = os.path.join(diretorio_atual, "inventario_usuarios.xlsx")
 
-# gerenciar estoque no excel
+# gerenciar estoque e inventário dos usuários no excel
 class Estoque:
     def __init__(self, arquivo):
         self.arquivo = arquivo
@@ -46,6 +46,7 @@ class Estoque:
             print(f"Erro: O arquivo {arquivo} ou {ARQUIVO_INVENTARIO} não foi encontrado!")
             raise
 
+    # função para salvar as planilhas        
     def salvar(self):
         self.wb.save(self.arquivo)
 
@@ -99,26 +100,26 @@ class Estoque:
     def adicionar_item(self, item_nome, quantidade):
         linha_item = self.encontrar_item(item_nome)
         if linha_item:
-            # Se o item já existe, adicionar a quantidade ao existente
+            # se o item já existe, adicionar a quantidade ao existente
             linha_item[1].value += quantidade
         else:
-            # Se o item não existe, criar uma nova linha no estoque
+            # se o item não existe, criar uma nova linha no estoque
             nova_linha = self.sheet.max_row + 1
             self.sheet.cell(row=nova_linha, column=1).value = item_nome
             self.sheet.cell(row=nova_linha, column=2).value = quantidade
             self.salvar()
 
-            # Adicionar o item à planilha de inventário com quantidade 0 para cada usuário
+            # adicionar o item à planilha de inventário com quantidade 0 para cada usuário
             for row in self.sheet_inventario.iter_rows(min_row=2, max_col=13):
-                # Encontrar a primeira coluna vazia (onde o novo item será adicionado)
+                # encontrar a primeira coluna vazia (onde o novo item será adicionado)
                 for idx, cell in enumerate(row[1:], start=1):
                     if cell.value is None:
-                        # Adiciona o item na primeira coluna vazia encontrada
-                        self.sheet_inventario.cell(row=1, column=idx+1).value = item_nome  # Cabeçalho do item
-                        row[idx].value = 0  # Quantidade inicial 0 para o novo item
+                        # adiciona o item na primeira coluna vazia encontrada
+                        self.sheet_inventario.cell(row=1, column=idx+1).value = item_nome  # cabeçalho do item
+                        row[idx].value = 0  # quantidade inicial 0 para o novo item
                         break
 
-            # Salvar as alterações no inventário
+    
             self.wb_inventario.save(ARQUIVO_INVENTARIO)
         
         return True
@@ -151,9 +152,9 @@ def login_admin(email, senha):
         for widget in tela_login.winfo_children():
             widget.destroy()
         if email == "encmat@ime.eb.br":
-            criar_tela_adicao_itens(tela_login)  # Interface exclusiva para encmat
+            criar_tela_adicao_itens(tela_login)  # interface exclusiva para encmat
         else:
-            criar_tela_estoque(tela_login)  # Interface padrão para outros usuários
+            criar_tela_estoque(tela_login)  # interface padrão para outros usuários
     else:
         messagebox.showerror("Erro", "Usuário ou senha inválidos.")
 
@@ -205,7 +206,6 @@ def adicionar_item_estoque(item_nome, quantidade):
             messagebox.showerror("Erro", "Falha ao adicionar item ao estoque.")
     else:
         messagebox.showerror("Erro", "Nome do item e quantidade válidos são necessários.")
-
 
 
 # interface gráfica
