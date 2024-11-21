@@ -23,7 +23,7 @@ diretorio_atual = os.path.dirname(os.path.abspath(__file__))
 caminho_imagem_eb = os.path.join(diretorio_atual, "simbolo_eb.png")
 caminho_imagem_ime = os.path.join(diretorio_atual, "simbolo_ime.png")
 
-# caminho da planilha
+# caminho da planilha de estoque
 ARQUIVO_ESTOQUE = os.path.join(diretorio_atual, "estoque.xlsx")
 
 # caminho para a planilha de inventário
@@ -84,34 +84,62 @@ class Estoque:
                 for idx, cell in enumerate(row[1:], start=1):  
                     if self.sheet.cell(row=idx+1, column=1).value == item_nome:  
                         if acao == "cautelar":
-                            # Atualiza a quantidade para o item cautelado
+                            # atualiza a quantidade para o item cautelado
                             row[idx].value = (row[idx].value or 0) + quantidade
                         elif acao == "devolver":
-                            # Verifica se o usuário tem a quantidade suficiente para devolver
+                            # verifica se o usuário tem a quantidade suficiente para devolver
                             if row[idx].value >= quantidade:
                                 row[idx].value -= quantidade
                             else:
                                 return False  # quantidade insuficiente no inventário
                 self.wb_inventario.save(ARQUIVO_INVENTARIO)  # salvar depois de alterar
                 return True  
-        return False  # caso o nome não seja encontrado
+        return False  
+    
+    def adicionar_item(self, item_nome, quantidade):
+        linha_item = self.encontrar_item(item_nome)
+        if linha_item:
+            # Se o item já existe, adicionar a quantidade ao existente
+            linha_item[1].value += quantidade
+        else:
+            # Se o item não existe, criar uma nova linha no estoque
+            nova_linha = self.sheet.max_row + 1
+            self.sheet.cell(row=nova_linha, column=1).value = item_nome
+            self.sheet.cell(row=nova_linha, column=2).value = quantidade
+            self.salvar()
 
+            # Adicionar o item à planilha de inventário com quantidade 0 para cada usuário
+            for row in self.sheet_inventario.iter_rows(min_row=2, max_col=13):
+                # Encontrar a primeira coluna vazia (onde o novo item será adicionado)
+                for idx, cell in enumerate(row[1:], start=1):
+                    if cell.value is None:
+                        # Adiciona o item na primeira coluna vazia encontrada
+                        self.sheet_inventario.cell(row=1, column=idx+1).value = item_nome  # Cabeçalho do item
+                        row[idx].value = 0  # Quantidade inicial 0 para o novo item
+                        break
+
+            # Salvar as alterações no inventário
+            self.wb_inventario.save(ARQUIVO_INVENTARIO)
+        
+        return True
+
+    
 
 # funções de integração com a interface gráfica
 estoque = Estoque(ARQUIVO_ESTOQUE)
 usuario_logado = None
 
 usuarios_info = {
-    "morel@ime.eb.br": {"nome": "Morel", "numero": "12345"},
-    "peixoto@ime.eb.br": {"nome": "Peixoto", "numero": "67890"},
-    "nicolas@ime.eb.br": {"nome": "Nicolas", "numero": "11223"}
+    "morel@ime.eb.br": {"nome": "Morel"},
+    "peixoto@ime.eb.br": {"nome": "Peixoto"},
+    "nicolas@ime.eb.br": {"nome": "Nicolas"},
 }
 
 def realizar_login(email, senha):
     global usuario_logado
     
     # usuários para autenticação
-    usuarios = {"morel@ime.eb.br": "morel", "peixoto@ime.eb.br": "peixoto", "nicolas@ime.eb.br": "nicolas"}
+    usuarios = {"morel@ime.eb.br": "morel", "peixoto@ime.eb.br": "peixoto", "nicolas@ime.eb.br": "nicolas", "encmat@ime.eb.br": "encmat"}
 
     if email in usuarios and usuarios[email] == senha:
         usuario_logado = email
@@ -120,10 +148,12 @@ def realizar_login(email, senha):
 
 def login_admin(email, senha):
     if realizar_login(email, senha):
-        # deixar só uma tela por vez, exclui a de login e cria outra
         for widget in tela_login.winfo_children():
             widget.destroy()
-        criar_tela_estoque(tela_login)  
+        if email == "encmat@ime.eb.br":
+            criar_tela_adicao_itens(tela_login)  # Interface exclusiva para encmat
+        else:
+            criar_tela_estoque(tela_login)  # Interface padrão para outros usuários
     else:
         messagebox.showerror("Erro", "Usuário ou senha inválidos.")
 
@@ -133,9 +163,6 @@ def cautelar_item(item, quantidade):
         if usuario_logado in usuarios_info:
             info_usuario = usuarios_info[usuario_logado]
             nome_responsavel = info_usuario["nome"]
-            numero_responsavel = info_usuario["numero"]
-            
-            data_retirada = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
             if estoque.retirar_item(item, int(quantidade), nome_responsavel):
                 if estoque.atualizar_inventario_usuario(nome_responsavel, item, int(quantidade), "cautelar"):
@@ -169,6 +196,16 @@ def devolver_item(item, quantidade):
             messagebox.showerror("Erro", "Usuário não registrado.")
     else:
         messagebox.showerror("Erro", "Selecione um item válido e insira uma quantidade.")
+
+def adicionar_item_estoque(item_nome, quantidade):
+    if item_nome and quantidade.isdigit() and int(quantidade) > 0:
+        if estoque.adicionar_item(item_nome, int(quantidade)):
+            messagebox.showinfo("Sucesso", f"{quantidade} unidades de {item_nome} adicionadas ao estoque.")
+        else:
+            messagebox.showerror("Erro", "Falha ao adicionar item ao estoque.")
+    else:
+        messagebox.showerror("Erro", "Nome do item e quantidade válidos são necessários.")
+
 
 
 # interface gráfica
@@ -245,6 +282,28 @@ def criar_tela_estoque(tela):
     ttk.Button(tela, text="Cautelar", command=lambda: cautelar_item(item_selecionado.get(), entrada_quantidade.get())).pack(pady=10)
     ttk.Button(tela, text="Devolver", command=lambda: devolver_item(item_selecionado.get(), entrada_quantidade.get())).pack(pady=10)
     ttk.Button(tela, text="Mostrar Estoque", command=exibir_estoque_em_tela).pack(pady=10)
+
+def criar_tela_adicao_itens(tela):
+    tela.title("Adicionar Itens ao Estoque")
+    tela.geometry("400x300")
+    tela.configure(background=cor_verde)
+
+    tk.Label(tela, text="Adicionar Itens ao Estoque", font=('Arial', 18), bg=cor_verde, fg=letr).pack(pady=20)
+
+    tk.Label(tela, text="Nome do Item:", bg=cor_verde, fg=letr).pack()
+    entrada_item_nome = tk.Entry(tela)
+    entrada_item_nome.pack(pady=5)
+
+    tk.Label(tela, text="Quantidade:", bg=cor_verde, fg=letr).pack()
+    entrada_quantidade = tk.Entry(tela)
+    entrada_quantidade.pack(pady=5)
+
+    ttk.Button(
+        tela,
+        text="Adicionar",
+        command=lambda: adicionar_item_estoque(entrada_item_nome.get(), entrada_quantidade.get())
+    ).pack(pady=20)
+
 
 # iniciar a aplicação
 criar_tela_login()
