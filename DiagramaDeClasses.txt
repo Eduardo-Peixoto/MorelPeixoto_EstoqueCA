@@ -1,0 +1,40 @@
++-------------------+
+|     Estoque       |
++-------------------+
+| - arquivo         |
+| - wb              | 
+| - sheet           |
+| - wb_inventario   |
+| - sheet_inventario|
++----------------------------------+
+| + __init__()                     |
+| + salvar()                       |
+| + exibir_estoque()               |
+| + encontrar_item()               | 
+| + retirar_item()                 |
+| + devolver_item()                |
+| + atualizar_inventario_usuario() |
+| + adicionar_item()               |
++----------------------------------+
+
++--------------------------+
+| Funções Globais          |
++--------------------------+
+| realizar_login()         |
+| login_admin()            |
+| cautelar_item()          |
+| devolver_item()          |
+| adicionar_item_estoque() |
+| criar_tela_login()       |
+| exibir_estoque_em_tela() |
+| criar_tela_estoque()     |
+| criar_tela_adicao_itens()|
++--------------------------+
+
++-------------------+
+| Interface Gráfica |
++-------------------+
+| Tela Login        |
+| Tela Estoque      |
+| Tela Adição Itens |
++-------------------+
