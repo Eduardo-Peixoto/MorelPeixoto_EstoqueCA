@@ -102,6 +102,7 @@ No Tkinter, há a possibilidade de personalizar os widgets para ajustar a aparê
 
 - Python instalado na máquina
 - Biblioteca `openpyxl` para manipulação de arquivos Excel (`pip install openpyxl`)
+- Biblioteca `pillow` utilizada para trabalhar com imagens 
 - Imagens correspondentes às logos usadas no projeto no mesmo diretório do código.
 
 ### Esboço GUI
