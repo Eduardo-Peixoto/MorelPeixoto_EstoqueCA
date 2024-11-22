@@ -4,20 +4,20 @@
   <summary>Sumário</summary>
   <ol>
     <li>
-      <a href="Sobre o projeto#sobre-o-projeto">Sobre o projeto</a>
+      <a href="#sobre-o-projeto">Sobre o projeto</a>
       <ul>
-        <li><a href="Linguagens de programação utilizadas#linguagens-de-programação-utilizadash">Linguagens de programação utilizadas</a></li>
+        <li><a href="#linguagens-de-programação-utilizadas">Linguagens de programação utilizadas</a></li>
       </ul>
     </li>
     <li>
-      <a href="Primeiros passos#primeiros-passos">Primeiros assos</a>
+      <a href="#primeiros-passos">Primeiros passos</a>
       <ul>
-        <li><a href="Pré requisitos#pré-requisitos">Pré requisitos</a></li>
-        <li><a href="Instalação#instalação">Instalação</a></li>
+        <li><a href="#pré-requisitos">Pré-requisitos</a></li>
+        <li><a href="#instalação">Instalação</a></li>
       </ul>
     </li>
-    <li><a href="Modo de uso#modo-de-uso">Modo de uso</a></li>
-    <li><a href="Agradecimentos#agradecimentos">Agradecimentos</a></li>
+    <li><a href="#modo-de-uso">Modo de uso</a></li>
+    <li><a href="#agradecimentos">Agradecimentos</a></li>
   </ol>
 </details>
 
@@ -98,18 +98,34 @@ No Tkinter, há a possibilidade de personalizar os widgets para ajustar a aparê
 9. Finalizando a Aplicação
 É importante lembrar que o loop principal (mainloop) do Tkinter deve permanecer ativo para que a interface continue respondendo aos eventos e interações do usuário. Esse loop é responsável por manter a janela aberta e garantir que as ações dos usuários sejam capturadas e tratadas.
 
-### Pré requisitos
+### Pré-requisitos
+
+- Python instalado na máquina
+- Biblioteca `openpyxl` para manipulação de arquivos Excel (`pip install openpyxl`)
+- Imagens correspondentes às logos usadas no projeto no mesmo diretório do código.
 
 ### Esboço GUI
 
--Área de login: o usuário pode selecionar entre um usuário comum (pode apenas cautelar e descautelar) ou administrador (pode alterar o estoque de outras maneiras, criar itens).
--Área de estoque: o usuário seleciona dentre os itens disponíveis quais ele quer cauetelar/descautelar e seleciona a quantidade.
+- **Área de login**: O usuário pode selecionar entre um usuário comum (pode apenas cautelar e descautelar) ou administrador (pode alterar o estoque de outras maneiras, criar itens).
+- **Área de estoque**: O usuário seleciona dentre os itens disponíveis quais ele quer cautelar/descautelar e seleciona a quantidade.
 
 ### Instalação
 
+Certifique-se de que o Python está instalado. Em seguida, instale as dependências usando:
+```bash
+pip install openpyxl pillow
+```
+
 ## Modo de uso
 
+1. Execute o arquivo principal do programa para iniciar a interface gráfica.
+2. Faça login utilizando um dos usuários cadastrados.
+3. Interaja com o sistema para realizar operações de cautela, descautela ou adição de itens ao estoque.
+
 ## Agradecimentos
+
+Agradecemos ao Tenente Nicolas pela oportunidade de desenvolver esse projeto, permitindo profunda aprendizagem nos âmbitos de programação e solução de problemas.
+
 
 
 
