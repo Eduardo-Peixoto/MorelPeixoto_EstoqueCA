@@ -100,6 +100,11 @@ No Tkinter, há a possibilidade de personalizar os widgets para ajustar a aparê
 
 ### Pré requisitos
 
+### Esboço GUI
+
+-Área de login: o usuário pode selecionar entre um usuário comum (pode apenas cautelar e descautelar) ou administrador (pode alterar o estoque de outras maneiras, criar itens).
+-Área de estoque: o usuário seleciona dentre os itens disponíveis quais ele quer cauetelar/descautelar e seleciona a quantidade.
+
 ### Instalação
 
 ## Modo de uso
