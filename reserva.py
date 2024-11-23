@@ -100,29 +100,28 @@ class Estoque:
     def adicionar_item(self, item_nome, quantidade):
         linha_item = self.encontrar_item(item_nome)
         if linha_item:
-            # se o item já existe, adicionar a quantidade ao existente
+            # Se o item já existe, adicionar a quantidade ao existente
             linha_item[1].value += quantidade
         else:
-            # se o item não existe, criar uma nova linha no estoque
+            # Se o item não existe, criar uma nova linha no estoque
             nova_linha = self.sheet.max_row + 1
             self.sheet.cell(row=nova_linha, column=1).value = item_nome
             self.sheet.cell(row=nova_linha, column=2).value = quantidade
-            self.salvar()
 
-            # adicionar o item à planilha de inventário com quantidade 0 para cada usuário
-            for row in self.sheet_inventario.iter_rows(min_row=2, max_col=13):
-                # encontrar a primeira coluna vazia (onde o novo item será adicionado)
-                for idx, cell in enumerate(row[1:], start=1):
-                    if cell.value is None:
-                        # adiciona o item na primeira coluna vazia encontrada
-                        self.sheet_inventario.cell(row=1, column=idx+1).value = item_nome  # cabeçalho do item
-                        row[idx].value = 0  # quantidade inicial 0 para o novo item
-                        break
+            # Atualizar a planilha de inventário
+            # Adicionar uma nova coluna para o item no inventário
+            coluna_item = self.sheet_inventario.max_column + 1
+            self.sheet_inventario.cell(row=1, column=coluna_item).value = item_nome  # Cabeçalho do novo item
+            for row in self.sheet_inventario.iter_rows(min_row=2, max_col=coluna_item):
+                # Inicializar a quantidade do novo item como 0 para todos os usuários
+                row[coluna_item - 1].value = 0
 
+        # Salvar as atualizações nos arquivos
+        self.salvar()
+        self.wb_inventario.save(ARQUIVO_INVENTARIO)
     
-            self.wb_inventario.save(ARQUIVO_INVENTARIO)
-        
         return True
+
 
     
 
